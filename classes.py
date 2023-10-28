@@ -11,16 +11,19 @@ class Phone:
     def __str__(self):
         return self.number
 
-class Name:
-    def __init__(self, name):
-        self.name = name
+class Field:
+    def __init__(self, value):
+        self.value = value
 
     def __str__(self):
-        return self.name
+        return str(self.value)
+
+class Name(Field):
+    pass
 
 class AddressBook(UserDict):
     def add_record(self, record):
-        self.data[record.name.name] = record
+        self.data[record.name.value] = record
 
     def find(self, name):
         return self.data.get(name, None)
@@ -31,8 +34,10 @@ class AddressBook(UserDict):
         for record in self.data.values():
             if hasattr(record, 'birthday'):
                 b_date = record.birthday.date.replace(year=today.year)
+                if (b_date.month == 2 and b_date.day == 29 and not today.year % 4 == 0):  # Handle non-leap year scenario
+                    b_date = b_date.replace(day=28)
                 if today <= b_date <= today + timedelta(days=7):
-                    upcoming_birthdays.append(record.name.name)
+                    upcoming_birthdays.append(record.name.value)
         return upcoming_birthdays
 
 class Record:
@@ -43,8 +48,26 @@ class Record:
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
 
-    def add_birthday(self, date):
-        self.birthday = Birthday(date)
+    def remove_phone(self, phone):
+        for p in self.phones:
+            if p.number == phone:
+                self.phones.remove(p)
+                break
+
+    def edit_phone(self, old_phone, new_phone):
+        for idx, p in enumerate(self.phones):
+            if p.number == old_phone:
+                self.phones[idx] = Phone(new_phone)
+                break
+
+    def find_phone(self, phone):
+        for p in self.phones:
+            if p.number == phone:
+                return p
+        return None
+
+    def __str__(self):
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.number for p in self.phones)}"
 
 class Birthday:
     def __init__(self, date):
@@ -54,3 +77,4 @@ class Birthday:
 
     def __str__(self):
         return self.date.strftime('%d.%m.%Y')
+
